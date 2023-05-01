@@ -1,0 +1,47 @@
+---
+  - hosts: all
+    gather_facts: yes
+    tasks:
+        - name: server update
+          update_cache: true
+          state: latest
+        - name: server upgrade
+          upgrade_packages: true
+          state: present
+        - name: open_ssh install
+          apt:
+             - name: open ssh_server
+               state: latest
+  - hosts: webservers
+    remote_user: ubuntu
+    become: yes
+    tasks:
+        - name: create a flask directory
+          file:
+            path: /home/ubuntu/flask
+            state: directory
+            owner: ubuntu
+            group: ubuntu
+        - name: creating a virtual environment
+          command: python3 -m venv venv #/home/ubuntu/flask-app/venv
+        - name: Activate the virtual environment
+          command: source venv/bin/activate #home/ubuntu/flask-app?venv/bin/activate
+        - name: install pip(python3-pip)
+          package_manger: apt
+          packages:
+            - python3-pip
+          state: latest
+        - name: install python3
+          name:
+            - python3
+          state: latest
+        - name: copy the flask app code to the servers
+          src: /etc/flask/app.py
+          dest: /home/ubuntu/flask/app.py
+        - name: setting ssh parameters
+          ssh_user: ubuntu
+          ssh_port: 22
+          ssh_key_file: ~/.ssh/id_rsa
+        - name: executing the flask-app deployement
+          command: python3 app.py
+   

@@ -1,44 +1,77 @@
-- hosts: all
-  gather_facts: 'yes'
-  tasks:
-    - name: server update
-      update_cache: true
-      state: latest
-    - name: server upgrade
-      upgrade_packages: true
-      state: present
-    - name: open_ssh install
-      apt:
-        - name: open ssh_server
+---
+  - hosts: all
+    gather_facts: yes
+    become: yes
+    tasks:
+      - name: server update
+        apt:
+          update_cache: yes
           state: latest
-- hosts: webservers
-  remote_user: ubuntu
-  become: 'yes'
-  tasks:
-    - name: create a flask directory
-      file:
-        path: /home/ubuntu/flask
-        state: directory
-        owner: ubuntu
-        group: ubuntu
-    - name: creating a virtual environment
-      command: python3 -m venv venv
-    - name: Activate the virtual environment
-      command: source venv/bin/activate
-    - name: install pip(python3-pip)
-      package_manger: apt
-      packages:
-        - python3-pip
-      state: latest
-    - name: install python3
-      package_manger: apt
-      state: latest
-    - name: copy the flask app code to the servers
-      src: /etc/flask/app.py
-      dest: /home/ubuntu/flask/app.py
-    - name: setting ssh parameters
-      ssh_user: ubuntu
-      ssh_port: 22
-      ssh_key_file: ~/.ssh/id_rsa
-    - name: executing the flask-app deployement
-      command: python3 app.py
+
+      - name: server upgrade
+        apt:
+          upgrade: yes
+          state: latest
+  - hosts: haproxy
+    remote_user: ubunutu
+    become: yes
+    tasks:
+      - name: Install HAProxy
+        apt:
+           name: haproxy
+           state: latest
+
+      - name: Configure HAProxy
+        template:
+               src: haproxy.cfg
+               dest: /etc/haproxy/haproxy.cfg
+               notify: restart haproxy
+
+    handlers:
+         - name: restart haproxy
+           service:
+                 name: haproxy
+                 state: restarted - hosts: webservers
+    remote_user: ubuntu
+    become: yes
+
+    tasks:
+      - name: create a flask directory
+        file:
+           path: /home/ubuntu/flask
+           state: directory
+           owner: ubuntu
+           group: ubuntu
+
+      - name: creating a virtual environment
+        command: python3 -m venv venv
+        args:
+           chdir: /home/ubuntu/flask
+
+      - name: Activate the virtual environment
+        command: source venv/bin/activate
+        args:
+           chdir: /home/ubuntu/flask
+
+      - name: install pip(python3-pip)
+        apt:
+          name: python3-pip
+          state: latest
+
+      - name: install python3
+        apt:
+          name: python3
+          state: latest
+
+      - name: copy the flask app code to the servers
+        copy:
+           src: /etc/flask/app.py
+           dest: /home/ubuntu/flask/app.py
+           owner: ubuntu
+           group: ubuntu
+
+      - name: executing the flask-app deployment
+        command: python3 app.py
+        args:
+           chdir: /home/ubuntu/flask
+                                   

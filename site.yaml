@@ -48,17 +48,22 @@
           name: python3
           state: latest
 
-      - name: install flask
-        pip:
-          name: flask
-          state: latest
+      - name: create a new directory
+        file:
+           path: /home/ubuntu/flask-app
+           state: directory
+           owner: ubuntu
+           group: ubuntu
+
+      - name: change directory to flask-app
+        shell: cd /home/ubuntu/flask-app
 
       - name: create virtual environment
-        shell: python3 -m venv /home/ubuntu/venv
+        shell: python3 -m venv /home/ubuntu/flask-app/venv
 
       - name: create virtual environment directory
         file:
-           path: /home/ubuntu/flask
+           path: /home/ubuntu/flask-app/venv
            state: directory
            owner: ubuntu
            group: ubuntu
@@ -66,18 +71,24 @@
       - name: activate virtual environment
         become: yes
         become_user: ubuntu
-        shell: . /home/ubuntu/venv/bin/activate
+        shell: . /home/ubuntu/flask-app/venv/bin/activate
         args:
-           chdir: /home/ubuntu/flask
+           chdir: /home/ubuntu/flask-app
+
+      - name: Install Flask in virtual environment
+        pip:
+          name: flask
+          state: present
 
       - name: copy the flask app code to the servers
         copy:
-           src: app.py
-           dest: /home/ubuntu/flask/app.py
+           src:  /home/ubuntu/flask-app/app.py
+           dest: /home/ubuntu/flask-app/venv/app.py
            owner: ubuntu
            group: ubuntu
+           remote_src: yes
 
-      - name: executing the flask-app deployment
-        command: python3 app.py
-        args:
-           chdir: /home/ubuntu/flask
+      - name: execute the flask-app deployment
+        shell: nohup python3 /home/ubuntu/flask-app/venv/app.py
+        async: 500
+        poll: 0

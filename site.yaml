@@ -72,7 +72,7 @@
 
       - name: copy the flask app code to the servers
         copy:
-           src: /etc/flask/app.py
+           src: app.py
            dest: /home/ubuntu/flask/app.py
            owner: ubuntu
            group: ubuntu

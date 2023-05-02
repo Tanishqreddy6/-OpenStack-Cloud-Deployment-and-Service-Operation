@@ -13,8 +13,8 @@
           upgrade: yes
           state: latest
   - hosts: haproxy
-    remote_user: ubunutu
     become: yes
+    remote_user: ubuntu
     tasks:
       - name: Install HAProxy
         apt:
@@ -23,37 +23,22 @@
 
       - name: Configure HAProxy
         template:
-               src: haproxy.cfg
-               dest: /etc/haproxy/haproxy.cfg
-               notify: restart haproxy
+           src: haproxy.cfg
+           dest: /etc/haproxy/haproxy.cfg
+        notify: restart haproxy
 
     handlers:
          - name: restart haproxy
            service:
                  name: haproxy
-                 state: restarted - hosts: webservers
+                 state: restarted
+
+  - hosts: webservers
     remote_user: ubuntu
     become: yes
-
     tasks:
-      - name: create a flask directory
-        file:
-           path: /home/ubuntu/flask
-           state: directory
-           owner: ubuntu
-           group: ubuntu
 
-      - name: creating a virtual environment
-        command: python3 -m venv venv
-        args:
-           chdir: /home/ubuntu/flask
-
-      - name: Activate the virtual environment
-        command: source venv/bin/activate
-        args:
-           chdir: /home/ubuntu/flask
-
-      - name: install pip(python3-pip)
+      - name: install python3-pip
         apt:
           name: python3-pip
           state: latest
@@ -62,6 +47,28 @@
         apt:
           name: python3
           state: latest
+
+      - name: install flask
+        pip:
+          name: flask
+          state: latest
+
+      - name: create virtual environment
+        shell: python3 -m venv /home/ubuntu/venv
+
+      - name: create virtual environment directory
+        file:
+           path: /home/ubuntu/flask
+           state: directory
+           owner: ubuntu
+           group: ubuntu
+
+      - name: activate virtual environment
+        become: yes
+        become_user: ubuntu
+        shell: . /home/ubuntu/venv/bin/activate
+        args:
+           chdir: /home/ubuntu/flask
 
       - name: copy the flask app code to the servers
         copy:
@@ -74,4 +81,3 @@
         command: python3 app.py
         args:
            chdir: /home/ubuntu/flask
-                                   

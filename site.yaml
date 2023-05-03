@@ -82,11 +82,9 @@
 
       - name: copy the flask app code to the servers
         copy:
-           src:  ./app.py
+           src: app.py
            dest: /home/ubuntu/flask-app/venv/app.py
-           owner: ubuntu
-           group: ubuntu
-           remote_src: yes
+           mode: 0775       
 
       - name: execute the flask-app deployment
         shell: nohup python3 /home/ubuntu/flask-app/venv/app.py

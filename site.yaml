@@ -12,16 +12,16 @@
         apt:
           upgrade: yes
           state: latest
-  - hosts: haproxy
+  - hosts: HAproxy
     become: yes
     remote_user: ubuntu
     tasks:
-      - name: Install HAProxy
+      - name: Install HAproxy
         apt:
            name: haproxy
            state: latest
 
-      - name: Configure HAProxy
+      - name: Configure HAproxy
         template:
            src: haproxy.cfg
            dest: /etc/haproxy/haproxy.cfg
@@ -30,7 +30,7 @@
     handlers:
          - name: restart haproxy
            service:
-                 name: haproxy
+                 name: HAproxy
                  state: restarted
 
   - hosts: webservers

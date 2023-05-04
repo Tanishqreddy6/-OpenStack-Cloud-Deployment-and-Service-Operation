@@ -42,6 +42,6 @@ backend web-backend
         balance roundrobin
 	mode http
 	option forwardfor
-     {% for host in groups["webservers"] %}
-	server {{ host }} {{ hostvars[host]["ansible_default_ipv4"]["address"] }}:5000 check
-     {% endfor %}
+    {%  for server in groups['web'] %}
+    server {{ hostvars[server]['inventory_hostname'] }} {{ hostvars[server]['ansible_default_ipv4']['address']}}:5000
+{% endfor %}

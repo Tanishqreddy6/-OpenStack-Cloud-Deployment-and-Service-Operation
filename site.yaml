@@ -8,41 +8,37 @@
           update_cache: yes
           state: latest
 
-      - name: server upgrade
-        apt:
-          upgrade: yes
-          state: latest
   - hosts: HAproxy
     become: yes
     remote_user: ubuntu
     tasks:
-      - name: Install HAproxy
+      - name: Install HAProxy
         apt:
            name: haproxy
            state: latest
 
-      - name: Configure HAproxy
+      - name: Configure HAProxy
         template:
            src: haproxy.cfg.j2
-           dest: /etc/haproxy/haproxy.cfg
-   
+           dest: /etc/haproxy/haproxy.cfg.j2
+
       - name: Restart HAproxy
         become: yes
-        shell: sudo service haproxy restart
-   
+        shell: systemctl restart haproxy
+
   - hosts: webservers
     remote_user: ubuntu
     become: yes
     tasks:
 
-      - name: install python3-pip
-        apt:
-          name: python3-pip
-          state: latest
-
       - name: install python3
         apt:
           name: python3
+          state: latest
+
+      - name: install python3-pip
+        apt:
+          name: python3-pip
           state: latest
 
       - name: create a new directory
@@ -54,6 +50,11 @@
 
       - name: change directory to flask-app
         shell: cd /home/ubuntu/flask-app
+
+      - name: Install Flask in virtual environment
+        pip:
+          name: flask
+          state: present
 
       - name: create virtual environment
         shell: python3.8 -m venv /home/ubuntu/flask-app/venv
@@ -72,20 +73,13 @@
         args:
            chdir: /home/ubuntu/flask-app
 
-      - name: Install Flask in virtual environment
-        pip:
-          name: flask
-          state: present
-
       - name: copy the flask app code to the servers
         copy:
-           src: app.py
+           src:  app.py
            dest: /home/ubuntu/flask-app/venv/app.py
-           mode: 0775       
+           mode: 0775
 
       - name: execute the flask-app deployment
         shell: flask run -h 0.0.0.0 -p 5000
-        async: 500
-        poll: 0
         async: 500
         poll: 0

@@ -42,7 +42,7 @@ backend web-backend
         balance roundrobin
 	mode http
 	option forwardfor
-   {% for i in group.webservers %} 
+   {% for i in groups.webservers %} 
    server  app{{ loop.index }} {{ i }} check
    {% endfor %}
    

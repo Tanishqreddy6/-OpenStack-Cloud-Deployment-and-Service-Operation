@@ -25,14 +25,11 @@
         template:
            src: haproxy.cfg.j2
            dest: /etc/haproxy/haproxy.cfg
-        notify: restart haproxy
-
-    handlers:
-         - name: restart HAproxy
-           service:
-                 name: HAproxy
-                 state: restarted
-
+   
+  - name: Restart HAproxy
+        become: yes
+        shell: sudo service haproxy restart
+   
   - hosts: webservers
     remote_user: ubuntu
     become: yes
@@ -59,7 +56,7 @@
         shell: cd /home/ubuntu/flask-app
 
       - name: create virtual environment
-        shell: python3 -m venv /home/ubuntu/flask-app/venv
+        shell: python3.8 -m venv /home/ubuntu/flask-app/venv
 
       - name: create virtual environment directory
         file:

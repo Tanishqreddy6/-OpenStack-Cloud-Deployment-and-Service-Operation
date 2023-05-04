@@ -26,7 +26,7 @@
            src: haproxy.cfg.j2
            dest: /etc/haproxy/haproxy.cfg
    
-  - name: Restart HAproxy
+      - name: Restart HAproxy
         become: yes
         shell: sudo service haproxy restart
    
@@ -84,6 +84,8 @@
            mode: 0775       
 
       - name: execute the flask-app deployment
-        shell: nohup python3 /home/ubuntu/flask-app/venv/app.py
+        shell: flask run -h 0.0.0.0 -p 5000
+        async: 500
+        poll: 0
         async: 500
         poll: 0

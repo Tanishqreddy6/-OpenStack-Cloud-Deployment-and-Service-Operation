@@ -3,15 +3,18 @@
     gather_facts: yes
     become: yes
     tasks:
-      - name: server update
+      - name: apt update
         apt:
           update_cache: yes
-          state: latest
 
   - hosts: HAproxy
     become: yes
     remote_user: ubuntu
     tasks:
+      - name: HAproxy Update
+        apt:
+          update_cache: yes
+
       - name: Install HAProxy
         apt:
            name: haproxy
@@ -24,12 +27,17 @@
 
       - name: Restart HAproxy
         become: yes
-        shell: systemctl restart haproxy
+        name: haproxy
+        state: started
 
   - hosts: webservers
     remote_user: ubuntu
     become: yes
     tasks:
+
+      - name: Webservers update
+        apt:
+          update-cache: yes
 
       - name: install python3
         apt:
@@ -41,41 +49,9 @@
           name: python3-pip
           state: latest
 
-      - name: create a new directory
-        file:
-           path: /home/ubuntu/flask-app
-           state: directory
-           owner: ubuntu
-           group: ubuntu
-
-      - name: change directory to flask-app
-        shell: cd /home/ubuntu/flask-app
-
       - name: install Gunicorn
         apt:
           name: gunicorn
-
-      - name: Install Flask in virtual environment
-        pip:
-          name: flask
-          state: present
-
-      - name: create virtual environment
-        shell: python3.8 -m venv /home/ubuntu/flask-app/venv
-
-      - name: create virtual environment directory
-        file:
-           path: /home/ubuntu/flask-app/venv
-           state: directory
-           owner: ubuntu
-           group: ubuntu
-
-      - name: activate virtual environment
-        become: yes
-        become_user: ubuntu
-        shell: . /home/ubuntu/flask-app/venv/bin/activate
-        args:
-           chdir: /home/ubuntu/flask-app
 
       - name: copy the flask app code to the servers
         copy:

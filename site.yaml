@@ -17,12 +17,12 @@
         apt:
           update_cache: yes
 
-      - name: Install HAProxy
+      - name: Install HAproxy
         apt:
            name: haproxy
            state: latest
 
-      - name: Configure HAProxy
+      - name: Configure HAproxy
         template:
                src: haproxy.cfg.j2
                dest: /etc/haproxy/haproxy.cfg.j2

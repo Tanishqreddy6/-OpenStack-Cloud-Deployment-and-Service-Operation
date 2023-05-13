@@ -66,7 +66,7 @@
       - name: execute the flask-app deployment
         shell: gunicorn -w 2 -D -b 0.0.0.0:5000 app:app
  
- - hosts: HAproxy
+  - hosts: HAproxy
     become: yes
     become_method: sudo
     tasks:       

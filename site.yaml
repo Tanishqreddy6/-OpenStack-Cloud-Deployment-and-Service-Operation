@@ -67,5 +67,4 @@
 
       - name: execute the flask-app deployment
         shell: gunicorn -w 2 -D -b 0.0.0.0:5000 app.py
-        async: 500
-        poll: 0
+       

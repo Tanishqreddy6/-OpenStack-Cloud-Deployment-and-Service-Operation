@@ -45,7 +45,7 @@
 
 - hosts: all
   gather_facts: true
-
+#Now Installing haproxy, configuring it and then haproxy restart 
 - hosts: HAproxy # gathering haproxy host
   become: true
   tasks:

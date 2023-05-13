@@ -66,5 +66,5 @@
            mode: 0775
 
       - name: execute the flask-app deployment
-        shell: gunicorn -w 2 -D -b 0.0.0.0:5000 app.py
+        shell: gunicorn -w 2 -D -b 0.0.0.0:5000 app:app
        

@@ -22,13 +22,14 @@
 
       - name: Configure HAProxy
         template:
-           src: haproxy.cfg.j2
-           dest: /etc/haproxy/haproxy.cfg.j2
+               src: haproxy.cfg.j2
+               dest: /etc/haproxy/haproxy.cfg.j2
 
       - name: Restart HAproxy
         become: yes
-        name: haproxy
-        state: started
+        service:
+              name: haproxy
+              state: restarted
 
   - hosts: webservers
     remote_user: ubuntu
@@ -42,12 +43,17 @@
       - name: install python3
         apt:
           name: python3
-          state: latest
+          state: present
 
       - name: install python3-pip
         apt:
           name: python3-pip
-          state: latest
+          state: present
+
+      - name: flask installation
+        pip:
+          name: flask
+          state: present
 
       - name: install Gunicorn
         apt:
@@ -55,8 +61,8 @@
 
       - name: copy the flask app code to the servers
         copy:
-           src:  app.py
-           dest: /home/ubuntu/flask-app/venv/app.py
+           src:  /$PWD/app.py
+           dest: /home/ubuntu/app.py
            mode: 0775
 
       - name: execute the flask-app deployment

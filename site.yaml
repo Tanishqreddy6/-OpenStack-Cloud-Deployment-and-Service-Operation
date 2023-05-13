@@ -34,29 +34,24 @@
               state: restarted
 
   - hosts: webservers
-    remote_user: ubuntu
     become: yes
     become_method: sudo
     tasks:
 
       - name: Webservers update
         apt:
-          update-cache: yes
-
-      - name: install python3
-        apt:
-          name: python3
-          state: present
+          update_cache: yes
 
       - name: install python3-pip
         apt:
           name: python3-pip
-          state: present
+          state: latest
+          update_cache: yes
 
       - name: flask installation
         pip:
           name: flask
-          state: present
+          state: latest
 
       - name: install Gunicorn
         apt:
@@ -66,8 +61,9 @@
         copy:
            src:  /$PWD/app.py
            dest: /home/ubuntu/app.py
-           mode: 0775
-
+           owner: ubuntu
+           mode: '0644'
+           
       - name: execute the flask-app deployment
         shell: gunicorn -w 2 -D -b 0.0.0.0:5000 app:app
        

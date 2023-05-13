@@ -2,6 +2,7 @@
   - hosts: all
     gather_facts: yes
     become: yes
+    become_method: sudo
     tasks:
       - name: apt update
         apt:
@@ -9,6 +10,7 @@
 
   - hosts: HAproxy
     become: yes
+    become_method: sudo
     remote_user: ubuntu
     tasks:
       - name: HAproxy Update
@@ -34,6 +36,7 @@
   - hosts: webservers
     remote_user: ubuntu
     become: yes
+    become_method: sudo
     tasks:
 
       - name: Webservers update

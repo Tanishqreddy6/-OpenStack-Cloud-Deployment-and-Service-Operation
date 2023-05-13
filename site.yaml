@@ -1,77 +1,69 @@
 ---
-  - hosts: all
-    gather_facts: yes
-    become: yes
-    become_method: sudo
-    tasks:
-      - name: apt update
-        apt:
-          update_cache: yes
+- hosts: all #reaching out to all the hosts and gathering variables and other information
+  gather_facts: yes
+  become: yes
+  become_method: sudo
+  tasks:
+    - name: update all hosts #sudo apt update (updating all the servers)
+      apt:
+        update_cache: yes
+# Firstly updating the webservers, installing flask and deploying the webservers and then configuring haproxy
+- hosts: webservers #reaching out to webservers and also giving sudo permissions
+  become: true
+  become_method: sudo
+  gather_facts: true
+  tasks:
+    - name: update all webservers #updating to the latest state
+      apt:
+        update_cache: true
 
-  - hosts: HAproxy
-    become: yes
-    become_method: sudo
-    tasks:
-      - name: HAproxy Update
-        apt:
-          update_cache: yes
+    - name: pip3 installation #python installation using pip3
+      apt:
+        name: python3-pip
+        state: latest
+        update_cache: true
 
-      - name: Install HAproxy
-        apt:
-           name: haproxy
-           state: latest
+    - name: Installing flask #flask app installation
+      pip:
+        executable: pip3
+        name: flask
+        state: latest
 
-      - name: Configure HAproxy
-        template:
-               src: haproxy.cfg.j2
-               dest: /etc/haproxy/haproxy.cfg.j2
+    - name: gunicorn installation #gunicorn installation for gateway interface installation
+      apt:
+        name: gunicorn
 
-      - name: Restart HAproxy
-        become: yes
-        service:
-              name: haproxy
-              state: restarted
+    - name: copy flask app code  #copying the code from app.py to flask app
+      copy:
+        src: /$PWD/app.py
+        dest: /home/ubuntu/app.py
+        owner: ubuntu
+        mode: '0644'
 
-  - hosts: webservers
-    become: yes
-    become_method: sudo
-    tasks:
+    - name: Running Flask application #Execute the flask app
+      shell: gunicorn -w 2 -D -b 0.0.0.0:5000 app:app
 
-      - name: Webservers update
-        apt:
-          update_cache: yes
+- hosts: all
+  gather_facts: true
 
-      - name: install python3-pip
-        apt:
-          name: python3-pip
-          state: latest
-          update_cache: yes
+- hosts: HAproxy # gathering haproxy host
+  become: true
+  tasks:
+    - name: update HAproxy
+      apt:
+        update_cache: yes
 
-      - name: flask installation
-        pip:
-          name: flask
-          state: latest
+    - name: Installing HAPROXY
+      apt:
+        name: haproxy
+        state: present
 
-      - name: install Gunicorn
-        apt:
-          name: gunicorn
+    - name: Configure haproxy
+      template:
+             src: /$PWD/haproxy.cfg.j2
+             dest: /etc/haproxy/haproxy.cfg
 
-      - name: copy the flask app code to the servers
-        copy:
-           src:  /$PWD/app.py
-           dest: /home/ubuntu/app.py
-           owner: ubuntu
-           mode: '0644'
-           
-      - name: execute the flask-app deployment
-        shell: gunicorn -w 2 -D -b 0.0.0.0:5000 app:app
- 
-  - hosts: HAproxy
-    become: yes
-    become_method: sudo
-    tasks:       
-      - name: Restart HAproxy
-        become: yes
-        service:
-              name: haproxy
-              state: restarted
+    - name: Restart haproxy
+      service:
+        name: haproxy
+        state: restarted

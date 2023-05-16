@@ -17,6 +17,12 @@
       apt:
         update_cache: true
 
+    - name: install nginx
+      apt:
+        name: nginx
+        state: latest
+
+
     - name: pip3 installation #python installation using pip3
       apt:
         name: python3-pip
@@ -43,9 +49,24 @@
     - name: Running Flask application #Execute the flask app
       shell: gunicorn -w 2 -D -b 0.0.0.0:5000 app:app
 
+    - name: install snmp in webservers
+      apt:
+        name: snmpd
+        state: latest
+
+    - name: configure snmpd
+      template:
+             src: snmpd.conf
+             dest: /etc/snmp/snmpd.conf
+
+    - name: restarting snmp
+      service:
+            name: snmpd
+            state: restated
+
 - hosts: all
   gather_facts: true
-#Now Installing haproxy, configuring it and then haproxy restart 
+#Now Installing haproxy, configuring it and then haproxy restart
 - hosts: HAproxy # gathering haproxy host
   become: true
   tasks:
@@ -67,3 +88,24 @@
       service:
         name: haproxy
         state: restarted
+
+    - name: Installing Nginx
+      apt:
+        name: nginx
+        update_cache: yes
+        state: latest
+
+    - name: configure nginx udp port
+      template:
+             src: nginxport.conf
+             dest: /etc/nginx/sites-available/default
+
+    - name: configure udp loadbalancing
+      template:
+             src: nginxlb.conf
+             dest: /etc/nginx/nginx.conf
+
+    - name: Restart Nginx
+      service:
+            name: nginx
+            state: restarted

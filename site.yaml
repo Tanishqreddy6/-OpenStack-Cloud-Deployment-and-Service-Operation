@@ -62,7 +62,7 @@
     - name: restarting snmp
       service:
             name: snmpd
-            state: restated
+            state: restarted
 
 - hosts: all
   gather_facts: true

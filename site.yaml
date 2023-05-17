@@ -36,8 +36,10 @@
         state: latest
 
     - name: gunicorn installation #gunicorn installation for gateway interface installation
-      apt:
+      pip:
+        executable: pip3     
         name: gunicorn
+        state: latest
 
     - name: copy flask app code  #copying the code from app.py to flask app
       copy:

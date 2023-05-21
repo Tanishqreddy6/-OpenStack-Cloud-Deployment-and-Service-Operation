@@ -1,4 +1,3 @@
----
 - hosts: all #reaching out to all the hosts and gathering variables and other information
   gather_facts: yes
   become: yes
@@ -21,7 +20,7 @@
       apt:
         name: nginx
         state: latest
-
+        update_cache: true
 
     - name: pip3 installation #python installation using pip3
       apt:
@@ -35,11 +34,20 @@
         name: flask
         state: latest
 
+
+    - name: apt update
+      apt:
+        update_cache: true
+
     - name: gunicorn installation #gunicorn installation for gateway interface installation
       pip:
-        executable: pip3     
+        executable: pip3
         name: gunicorn
         state: latest
+
+    - name: apt update
+      apt:
+        update_cache: true
 
     - name: copy flask app code  #copying the code from app.py to flask app
       copy:
@@ -55,6 +63,7 @@
       apt:
         name: snmpd
         state: latest
+        update_cache: true
 
     - name: configure snmpd
       template:
@@ -66,6 +75,9 @@
             name: snmpd
             state: restarted
 
+    - name: apt update
+      apt:
+        update_cache: true
 - hosts: all
   gather_facts: true
 #Now Installing haproxy, configuring it and then haproxy restart
@@ -80,6 +92,7 @@
       apt:
         name: haproxy
         state: present
+        update_cache: true
 
     - name: Configure haproxy
       template:
@@ -90,6 +103,10 @@
       service:
         name: haproxy
         state: restarted
+
+    - name: apt update
+      apt:
+        update_cache: true
 
     - name: Installing Nginx
       apt:
@@ -111,3 +128,6 @@
       service:
             name: nginx
             state: restarted
+    - name: apt update
+      apt:
+        update_cache: true
